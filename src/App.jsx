@@ -5,7 +5,28 @@ import './App.css';
 
 const App = () => {
   const [resultado, setResultado] = useState(null);
+  const [historico, setHistorico] = useState([]);
   const [erro, setErro] = useState(null);
+
+  const formatarMoeda = (valor) => {
+    const valorArredondado = valor.toFixed(2)
+    const partes = valorArredondado.split('.')
+    const inteiro = partes[0]
+    const decimal = partes[1]
+
+    let resultado = ''
+    let contador = 0
+
+    for (let i = inteiro.length - 1; i >= 0; i--) {
+      resultado = inteiro[i] + resultado
+      contador++
+      if (contador % 3 === 0 && i !== 0) {
+        resultado = '.' + resultado
+      }
+    }
+
+    return 'R$ ' + resultado + ',' + decimal
+  }
   
   const calcular = (valorInicial, aporte, taxa, periodo) => {
 
@@ -37,7 +58,10 @@ const App = () => {
     }
 
     setResultado(novoResultado)
-
+    setHistorico([
+      { data: new Date(), valorFinal: montante },
+      ...historico
+    ])
   }
   const limpar = () => {
     setResultado(null)
@@ -67,6 +91,44 @@ const App = () => {
         <div className="row mt-3">
           <div className="col-12 col-md-6 mx-auto">
             <ExibeDados resultado={resultado} />
+          </div>
+        </div>
+      }
+
+      {
+        historico.length > 0 &&
+        <div className="row mt-4">
+          <div className="col-12 col-md-6 mx-auto">
+            <div className="d-flex justify-content-between">
+              <h5>Histórico de simulações</h5>
+              <span>{historico.length} simulações</span>
+            </div>
+            <table className="table table-bordered mt-2">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Valor final</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  historico.map((item, index) => (
+                    <tr key={index}>
+                      <td>
+                        {item.data.toLocaleDateString('pt-BR')}{' '}
+                        {item.data.toLocaleTimeString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+                      <td>
+                        {formatarMoeda(item.valorFinal)}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       }
